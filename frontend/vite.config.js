@@ -10,3 +10,17 @@ export default defineConfig({
     emptyOutDir: true  // Clean the dist folder before building
   }
 })
+
+
+// {
+//   "rewrites": [
+//     {
+//       "source": "/api/(.*)",
+//       "destination": "/api/index.vercel.js"
+//     },
+//     {
+//       "source": "/(.*)",
+//       "destination": "/"
+//     }
+//   ]
+// }
