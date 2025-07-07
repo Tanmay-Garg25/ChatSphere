@@ -11,9 +11,14 @@ import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import { app, server } from "./lib/socket.js";
 
+
+app.use("/api", require("./routes/routes.js"));
+
+
+
 // Fix __dirname for ESModules
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __dirname = path.dirname(__filename); 
 
 // ✅ Load .env from backend root directory explicitly
 dotenv.config({ path: path.resolve(__dirname, '../.env') });
@@ -41,9 +46,13 @@ if (process.env.NODE_ENV === "production") {
   app.get("*", (req, res) => {
     res.sendFile(path.join(__dirname, "../frontend", "dist", "index.html"));
   });
-}
 
-server.listen(PORT, () => {
+
+  server.listen(PORT, () => {
   console.log("✅ server is running on PORT: " + PORT);
   connectDB();
 });
+
+}
+
+export default app;
