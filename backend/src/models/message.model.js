@@ -18,7 +18,7 @@ const messageSchema = new mongoose.Schema(
     image: {
       type: String,
     },
-        isSeen: {
+    isSeen: {
       type: Boolean,
       default: false,  // unread by default
     },

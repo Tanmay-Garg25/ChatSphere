@@ -1,96 +1,103 @@
-import { X } from "lucide-react";
+import { X, Search } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 import axios from "axios";
 import toast from "react-hot-toast";
 import { useState, useEffect } from "react";
 
-
-const ChatHeader = () => {
+const ChatHeader = ({ searchQuery, setSearchQuery }) => {
   const { selectedUser, setSelectedUser } = useChatStore();
-  const { onlineUsers,user,updateBlockedUsers } = useAuthStore();
+  const { onlineUsers, user, updateBlockedUsers } = useAuthStore();
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [isBlocked, setIsBlocked] = useState(false);
 
+  useEffect(() => {
+    if (selectedUser && user) {
+      setIsBlocked(user.blockedUsers?.includes(selectedUser._id));
+    }
+  }, [selectedUser, user]);
 
-const handleBlockUser = async () => {
-  try {
-    await axios.post(`/api/auth/block/${selectedUser._id}`);
-    toast.success("User blocked");
-    setIsBlocked(true); // manually toggle
-  } catch (err) {
-    console.error("Error blocking user:", err);
-    toast.error("Failed to block user");
-  }
-};
+  const handleBlockUser = async () => {
+    try {
+      await axios.post(`/api/auth/block/${selectedUser._id}`);
+      toast.success("User blocked");
+      setIsBlocked(true);
+      updateBlockedUsers(selectedUser._id, "block");
+    } catch (err) {
+      console.error("Error blocking user:", err);
+      toast.error("Failed to block user");
+    }
+  };
 
-const handleUnblockUser = async () => {
-  try {
-    await axios.post(`/api/auth/unblock/${selectedUser._id}`);
-    toast.success("User unblocked");
-    setIsBlocked(false); // manually toggle
-  } catch (err) {
-    console.error("Error unblocking user:", err);
-    toast.error("Failed to unblock user");
-  }
-};
-const [isBlocked, setIsBlocked] = useState(false);
+  const handleUnblockUser = async () => {
+    try {
+      await axios.post(`/api/auth/unblock/${selectedUser._id}`);
+      toast.success("User unblocked");
+      setIsBlocked(false);
+      updateBlockedUsers(selectedUser._id, "unblock");
+    } catch (err) {
+      console.error("Error unblocking user:", err);
+      toast.error("Failed to unblock user");
+    }
+  };
 
-useEffect(() => {
-  if (selectedUser && user) {
-    setIsBlocked(user.blockedUsers?.includes(selectedUser._id));
-  }
-}, [selectedUser, user]);
-
-
+  if (!selectedUser) return null;
 
   return (
     <div className="p-2.5 border-b border-base-300">
       <div className="flex items-center justify-between">
+        {/* Left: Avatar + User Info */}
         <div className="flex items-center gap-3">
-          {/* Avatar */}
           <div className="avatar">
             <div className="size-10 rounded-full relative">
-              <img src={selectedUser.profilePic || "/avatar.png"} alt={selectedUser.fullName} />
+              <img
+                src={selectedUser.profilePic || "/avatar.png"}
+                alt={selectedUser.fullName}
+              />
             </div>
           </div>
 
-          {/* User info */}
-          <div>
+          <div className="flex flex-col">
             <h3 className="font-medium">{selectedUser.fullName}</h3>
             <p className="text-sm text-base-content/70">
               {onlineUsers.includes(selectedUser._id) ? "Online" : "Offline"}
             </p>
           </div>
         </div>
-        
-        {/* Close button */}
-      <div className="flex items-center gap-2">
-  <button onClick={() => setSelectedUser(null)}>
-    <X />
-  </button>
-  {isBlocked ? (
-  <button
-    className="btn btn-xs btn-success text-white"
-    onClick={handleUnblockUser}
-  >
-    Unblock
-  </button>
-) : (
-  <button
-    className="btn btn-xs btn-error text-white"
-    onClick={handleBlockUser}
-  >
-    Block
-  </button>
-)}
-  {/* <button
-    className="btn btn-xs btn-error text-white"
-    onClick={handleBlockUser}
-  >
-    Block
-  </button> */}
-</div>
+
+        {/* Right: Actions */}
+        <div className="flex items-center gap-2">
+          <button
+            className={`btn btn-xs ${isBlocked ? "btn-success" : "btn-error"} text-white`}
+            onClick={isBlocked ? handleUnblockUser : handleBlockUser}
+          >
+            {isBlocked ? "Unblock" : "Block"}
+          </button>
+
+          <button onClick={() => setSelectedUser(null)}>
+            <X />
+          </button>
+
+          <button onClick={() => setIsSearchOpen((prev) => !prev)}>
+            {isSearchOpen ? <X size={18} /> : <Search size={18} />}
+          </button>
+        </div>
       </div>
+
+      {/* Search Input */}
+      {isSearchOpen && (
+        <div className="mt-2">
+          <input
+            type="text"
+            placeholder="Search messages..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="input input-sm input-bordered w-full"
+          />
+        </div>
+      )}
     </div>
   );
 };
+
 export default ChatHeader;

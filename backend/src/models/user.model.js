@@ -20,7 +20,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-     blockedUsers: [
+    blockedUsers: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "User",

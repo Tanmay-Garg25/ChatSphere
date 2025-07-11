@@ -5,18 +5,28 @@ import SidebarSkeleton from "./skeletons/SidebarSkeleton";
 import { Users } from "lucide-react";
 
 const Sidebar = () => {
+  const [searchQuery, setSearchQuery] = useState("");
   const { getUsers, users, selectedUser, setSelectedUser, isUsersLoading } = useChatStore();
 
   const { onlineUsers } = useAuthStore();
   const [showOnlineOnly, setShowOnlineOnly] = useState(false);
 
+  
+
   useEffect(() => {
     getUsers();
   }, [getUsers]);
 
-  const filteredUsers = showOnlineOnly
-    ? users.filter((user) => onlineUsers.includes(user._id))
-    : users;
+  
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch = (user.fullName || "").toLowerCase().includes(searchQuery.toLowerCase());
+  // const matchesSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase());
+  const isOnline = onlineUsers.includes(user._id);
+  return matchesSearch && (!showOnlineOnly || isOnline);
+});
+  // const filteredUsers = showOnlineOnly
+  //   ? users.filter((user) => onlineUsers.includes(user._id))
+  //   : users;
 
   if (isUsersLoading) return <SidebarSkeleton />;
 
@@ -27,6 +37,13 @@ const Sidebar = () => {
           <Users className="size-6" />
           <span className="font-medium hidden lg:block">Contacts</span>
         </div>
+        <input
+  type="text"
+  placeholder="Search username..."
+  value={searchQuery}
+  onChange={(e) => setSearchQuery(e.target.value)}
+  className="input input-sm input-bordered w-full mt-3 hidden lg:block"
+/>
         {/* TODO: Online filter toggle */}
         <div className="mt-3 hidden lg:flex items-center gap-2">
           <label className="cursor-pointer flex items-center gap-2">
